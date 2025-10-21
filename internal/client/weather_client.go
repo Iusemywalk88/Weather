@@ -3,21 +3,29 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Iusemywalk88/Weather/internal/config"
 	"github.com/Iusemywalk88/Weather/models"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 const (
-	apiKey  = "9b4430c225c9caf186f7f5a81414f451"
 	baseURL = "https://api.openweathermap.org/data/2.5/weather"
 )
 
 func GetWeather(city string) (models.WeatherResponse, error) {
-	url := baseURL + "?q=" + city + "&APPID=" + apiKey + "&units=metric&lang=ru"
-	resp, err := http.Get(url)
+
+	cfg := config.Load()
+
+	client := http.Client{
+		Timeout: time.Second * 10,
+	}
+
+	url := baseURL + "?q=" + city + "&APPID=" + cfg.WeatherAPIKey + "&units=metric&lang=ru"
+	resp, err := client.Get(url)
 	if err != nil {
-		return models.WeatherResponse{}, err
+		return models.WeatherResponse{}, fmt.Errorf("сервер погоды не отвежает, попробуйте позже")
 	}
 	defer resp.Body.Close()
 
