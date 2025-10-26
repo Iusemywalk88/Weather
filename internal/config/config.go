@@ -1,24 +1,21 @@
 package config
 
 import (
-	"os"
+	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
-	Port          string
-	WeatherAPIKey string
+	Port          string `envconfig:"PORT" default:"8080"`
+	WeatherAPIKey string `envconfig:"WEATHER_API_KEY" default:""`
+	WeatherAPIURL string `envconfig:"WEATHER_API_HOST" default:""`
 }
 
 func Load() *Config {
-	return &Config{
-		Port:          getEnv("PORT", "8080"),
-		WeatherAPIKey: getEnv("WEATHER_API_KEY", "9b4430c225c9caf186f7f5a81414f451"),
+	var c Config
+	err := envconfig.Process("", &c)
+	if err != nil {
+		panic(err)
 	}
-}
 
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
+	return &c
 }

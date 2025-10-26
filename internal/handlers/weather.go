@@ -5,7 +5,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HandleWeather(c *gin.Context) {
+type weatherHandler struct {
+	weatherCLient client.WeatherClient
+}
+
+func NewWeatherHandler(client client.WeatherClient) *weatherHandler {
+	return &weatherHandler{
+		weatherCLient: client,
+	}
+}
+
+func (w *weatherHandler) HandleWeather(c *gin.Context) {
 	city := c.Param("city")
 
 	if city == "" {
@@ -13,7 +23,7 @@ func HandleWeather(c *gin.Context) {
 		return
 	}
 
-	weather, err := client.GetWeather(city)
+	weather, err := w.weatherCLient.GetWeather(city)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return

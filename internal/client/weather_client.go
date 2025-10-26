@@ -3,43 +3,62 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Iusemywalk88/Weather/internal/config"
 	"github.com/Iusemywalk88/Weather/models"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
 
-const (
-	baseURL = "https://api.openweathermap.org/data/2.5/weather"
-)
+type WeatherClient interface {
+	GetWeather(city string) (models.WeatherResponse, error)
+}
 
-func GetWeather(city string) (models.WeatherResponse, error) {
+type weatherClient struct {
+	baseUrl    string
+	token      string
+	httpClient http.Client
+}
 
-	cfg := config.Load()
+func NewWeatherClient(baseUrl, token string) WeatherClient {
+	return &weatherClient{
+		baseUrl: baseUrl,
+		token:   token,
+		httpClient: http.Client{
+			Timeout: time.Second * 10,
+		},
+	}
+}
 
-	client := http.Client{
-		Timeout: time.Second * 10,
+func (w *weatherClient) GetWeather(city string) (models.WeatherResponse, error) {
+	req, err := http.NewRequest(http.MethodGet, w.baseUrl, nil)
+	if err != nil {
+		return models.WeatherResponse{}, err
 	}
 
-	url := baseURL + "?q=" + city + "&APPID=" + cfg.WeatherAPIKey + "&units=metric&lang=ru"
-	resp, err := client.Get(url)
+	values := req.URL.Query()
+	values.Add("q", city)
+	values.Add("APPID", w.token)
+	values.Add("units", "metric")
+	values.Add("lang", "ru")
+
+	req.URL.RawQuery = values.Encode()
+
+	resp, err := w.httpClient.Do(req)
+
 	if err != nil {
 		return models.WeatherResponse{}, fmt.Errorf("сервер погоды не отвежает, попробуйте позже")
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != 200 {
 		return models.WeatherResponse{}, fmt.Errorf("API вернуло ошибку: %s", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return models.WeatherResponse{}, err
-	}
-
 	var weatherResponse models.WeatherResponse
-	if err := json.Unmarshal(body, &weatherResponse); err != nil {
+
+	if err := json.NewDecoder(resp.Body).Decode(&weatherResponse); err != nil {
 		return models.WeatherResponse{}, err
 	}
 
