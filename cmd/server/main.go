@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Iusemywalk88/Weather/db"
 	"github.com/Iusemywalk88/Weather/internal/client"
 	"github.com/Iusemywalk88/Weather/internal/config"
 	"github.com/Iusemywalk88/Weather/internal/handlers"
@@ -17,13 +18,17 @@ func main() {
 	}
 
 	cfg := config.Load()
+	db := db.Connect()
 
 	r := gin.Default()
 	weatherClient := client.NewWeatherClient(cfg.WeatherAPIURL, cfg.WeatherAPIKey)
-	handler := handlers.NewWeatherHandler(weatherClient)
+	weatherHandler := handlers.NewWeatherHandler(weatherClient)
+	authHandler := handlers.NewAuthHandler(db)
 
-	r.GET("/weather/:city", handler.HandleWeather)
+	r.GET("/weather/:city", weatherHandler.HandleWeather)
+	r.POST("/register", authHandler.RegisterUser)
+	r.POST("/login", authHandler.Login)
 
-	log.Printf("🚀 Сервер запущен на http://localhost:%s", cfg.Port)
+	log.Printf("Сервер запущен на http://localhost:%s", cfg.Port)
 	r.Run(":" + cfg.Port)
 }

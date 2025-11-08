@@ -6,12 +6,12 @@ import (
 )
 
 type weatherHandler struct {
-	weatherCLient client.WeatherClient
+	weatherClient client.WeatherClient
 }
 
 func NewWeatherHandler(client client.WeatherClient) *weatherHandler {
 	return &weatherHandler{
-		weatherCLient: client,
+		weatherClient: client,
 	}
 }
 
@@ -23,7 +23,7 @@ func (w *weatherHandler) HandleWeather(c *gin.Context) {
 		return
 	}
 
-	weather, err := w.weatherCLient.GetWeather(city)
+	weather, err := w.weatherClient.GetWeather(city)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
