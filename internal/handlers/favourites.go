@@ -1,0 +1,22 @@
+package handlers
+
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+type Favourite struct {
+	Name string `json:"city"`
+}
+
+func addFavourites(c *gin.Context) {
+	var fav Favourite
+	if err := c.BindJSON(&fav); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error adding fav city": err.Error()})
+	}
+
+}
+
+func getFavourites(c *gin.Context) {
+
+}

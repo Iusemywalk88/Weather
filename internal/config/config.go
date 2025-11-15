@@ -18,9 +18,10 @@ type Config struct {
 	DBName        string `envconfig:"DB_NAME"`
 }
 
-func Load() *Config {
+func Load() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
+		return nil, err
 	}
 
 	var c Config
@@ -29,5 +30,5 @@ func Load() *Config {
 		panic(err)
 	}
 
-	return &c
+	return &c, nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/Iusemywalk88/Weather/internal/client"
 	"github.com/Iusemywalk88/Weather/internal/config"
 	"github.com/Iusemywalk88/Weather/internal/handlers"
+	"github.com/Iusemywalk88/Weather/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -17,17 +18,21 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	cfg := config.Load()
-	db := db.Connect()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal("Error loading config")
+	}
+	db := db.NewConnect()
 
 	r := gin.Default()
 	weatherClient := client.NewWeatherClient(cfg.WeatherAPIURL, cfg.WeatherAPIKey)
 	weatherHandler := handlers.NewWeatherHandler(weatherClient)
-	authHandler := handlers.NewAuthHandler(db)
+	authService := services.NewAuthService(db, []byte(cfg.JWTKey))
+	authHandler := handlers.NewAuthHandler(authService)
 
 	r.GET("/weather/:city", weatherHandler.HandleWeather)
 	r.POST("/register", authHandler.RegisterUser)
-	r.POST("/login", authHandler.Login)
+	r.POST("/login", authHandler.LoginUser)
 
 	log.Printf("Сервер запущен на http://localhost:%s", cfg.Port)
 	r.Run(":" + cfg.Port)

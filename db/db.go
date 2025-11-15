@@ -13,7 +13,7 @@ type DB struct {
 	*sqlx.DB
 }
 
-func Connect() *DB {
+func NewConnect() *DB {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -37,9 +37,9 @@ func (db *DB) CreateUser(user *models.User) error {
 	return err
 }
 
-func (d *DB) GetUserByEmail(email string) (*models.User, error) {
+func (db *DB) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
-	err := d.Get(&user, "SELECT id, email, password_hash FROM users WHERE email = $1", email)
+	err := db.Get(&user, "SELECT id, email, password_hash FROM users WHERE email = $1", email)
 	if err != nil {
 		return nil, err
 	}
