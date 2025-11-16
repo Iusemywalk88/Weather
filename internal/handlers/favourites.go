@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/Iusemywalk88/Weather/models/handlers"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

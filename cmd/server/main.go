@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading config")
 	}
-	database := db.New()
+	database := db.New(*cfg)
 
 	r := gin.Default()
 	weatherClient := client.NewWeatherClient(cfg.WeatherAPIURL, cfg.WeatherAPIKey)

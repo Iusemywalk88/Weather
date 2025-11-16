@@ -5,7 +5,6 @@ import (
 	"github.com/Iusemywalk88/Weather/internal/config"
 	"github.com/Iusemywalk88/Weather/models"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
 )
@@ -14,25 +13,9 @@ type DB struct {
 	*sqlx.DB
 }
 
-func New() *DB {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal("Error loading config")
-	}
-
-	host := cfg.DBHost
-	port := cfg.DBPort
-	user := cfg.DBUser
-	password := cfg.DBPass
-	dbname := cfg.DBName
-
+func New(cfg config.Config) *DB {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName)
 
 	db, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
