@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/Iusemywalk88/Weather/internal/client"
+	"github.com/Iusemywalk88/Weather/models/handlers"
 	"github.com/gin-gonic/gin"
 )
 
