@@ -16,33 +16,33 @@ func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 }
 
 func (a *AuthHandler) RegisterUser(c *gin.Context) {
-	var req handlers.Request
+	var req handlers.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, handlers.BaseResponse{Error: err.Error()})
 		return
 	}
 
 	_, err := a.AuthService.Register(req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"User with this email already exists": err.Error()})
+		c.JSON(http.StatusBadRequest, handlers.BaseResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
+	c.JSON(http.StatusCreated, handlers.BaseResponse{Message: "User created successfully"})
 }
 
 func (a *AuthHandler) LoginUser(c *gin.Context) {
-	var req handlers.Request
+	var req handlers.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		c.JSON(http.StatusBadRequest, handlers.BaseResponse{Error: "Invalid request payload"})
 		return
 	}
 
 	tokenString, err := a.AuthService.Login(req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		c.JSON(http.StatusUnauthorized, handlers.BaseResponse{Error: "Invalid credentials"})
 		return
 	}
 
-	c.JSON(http.StatusOK, handlers.LoginResponse{Token: tokenString})
+	c.JSON(http.StatusOK, handlers.BaseResponse{Data: handlers.LoginResponse{Token: tokenString}})
 }

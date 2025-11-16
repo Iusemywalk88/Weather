@@ -22,12 +22,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading config")
 	}
-	db := db.NewConnect()
+	database := db.New()
 
 	r := gin.Default()
 	weatherClient := client.NewWeatherClient(cfg.WeatherAPIURL, cfg.WeatherAPIKey)
 	weatherHandler := handlers.NewWeatherHandler(weatherClient)
-	authService := services.NewAuthService(db, []byte(cfg.JWTKey))
+	authService := services.NewAuthService(database, []byte(cfg.JWTKey))
 	authHandler := handlers.NewAuthHandler(authService)
 
 	r.GET("/weather/:city", weatherHandler.HandleWeather)

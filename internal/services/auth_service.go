@@ -34,7 +34,7 @@ func (s AuthService) Register(email, password string) (*models.User, error) {
 	if err := s.DB.CreateUser(user); err != nil {
 		return nil, err
 	}
-	return user, err
+	return user, nil
 }
 
 func (s AuthService) Login(email, password string) (string, error) {

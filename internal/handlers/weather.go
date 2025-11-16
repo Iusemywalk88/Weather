@@ -19,15 +19,15 @@ func (w *weatherHandler) HandleWeather(c *gin.Context) {
 	city := c.Param("city")
 
 	if city == "" {
-		c.JSON(400, gin.H{"error": "город не указан"})
+		c.JSON(400, handlers.BaseResponse{Error: "город не указан"})
 		return
 	}
 
 	weather, err := w.weatherClient.GetWeather(city)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(500, handlers.BaseResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(200, weather)
+	c.JSON(200, handlers.BaseResponse{Data: weather})
 }

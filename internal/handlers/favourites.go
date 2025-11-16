@@ -12,7 +12,7 @@ type Favourite struct {
 func addFavourites(c *gin.Context) {
 	var fav Favourite
 	if err := c.BindJSON(&fav); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error adding fav city": err.Error()})
+		c.JSON(http.StatusBadRequest, handlers.BaseResponse{Error: err.Error()})
 	}
 
 }
