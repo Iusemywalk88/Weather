@@ -28,7 +28,7 @@ func main() {
 	weatherClient := client.NewWeatherClient(cfg.WeatherAPIURL, cfg.WeatherAPIKey)
 	weatherHandler := handlers.NewWeatherHandler(weatherClient)
 	authService := services.NewAuthService(database, []byte(cfg.JWTKey))
-	authHandler := handlers.NewAuthHandler(authService)
+	authHandler := handlers.NewAuthHandler(authService, []byte(cfg.JWTKey))
 
 	r.GET("/weather/:city", weatherHandler.HandleWeather)
 	r.POST("/register", authHandler.RegisterUser)

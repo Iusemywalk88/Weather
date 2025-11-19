@@ -1,4 +1,4 @@
-package handlers
+package responses
 
 type BaseResponse struct {
 	Message string      `json:"message,omitempty"`
