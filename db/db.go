@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/Iusemywalk88/Weather/internal/config"
 	"github.com/Iusemywalk88/Weather/models"
@@ -38,4 +39,25 @@ func (db *DB) GetUserByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (db *DB) GetOrCreateCity(cityName string) (int, error) {
+	var city int
+	err := db.Get(&city, "SELECT id FROM cities WHERE name = $1", cityName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			createErr := db.QueryRow("INSERT INTO cities (name) VALUES ($1) RETURNING id", cityName).Scan(&city)
+			if createErr != nil {
+				return 0, createErr
+			}
+			return city, nil
+		}
+		return 0, err
+	}
+	return city, nil
+}
+
+func (db *DB) AddFavourite(userID, cityID int) error {
+	_, err := db.Exec("INSERT INTO favorite_cities (user_id, city_id) VALUES ($1, $2)", userID, cityID)
+	return err
 }
