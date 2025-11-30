@@ -5,9 +5,7 @@ import (
 	"github.com/Iusemywalk88/Weather/models/requests"
 	"github.com/Iusemywalk88/Weather/models/responses"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"net/http"
-	"strings"
 )
 
 type AuthHandler struct {
@@ -49,39 +47,4 @@ func (a *AuthHandler) LoginUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, responses.BaseResponse{Data: responses.LoginResponse{Token: tokenString}})
-}
-
-func (a *AuthHandler) AuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, responses.BaseResponse{Error: "Invalid authorization header"})
-			return
-		}
-
-		authHeader = strings.TrimPrefix(authHeader, "Bearer ")
-
-		token, err := jwt.Parse(authHeader, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, http.ErrAbortHandler
-			}
-			return a.JWTKey, nil
-		})
-
-		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.BaseResponse{Error: "Invalid token"})
-			return
-		}
-
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if sub, ok := claims["sub"].(float64); ok {
-				c.Set("userID", int(sub))
-				c.Next()
-			} else {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, responses.BaseResponse{Error: "Invalid token claims"})
-			}
-		} else {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.BaseResponse{Error: "Invalid token claims"})
-		}
-	}
 }

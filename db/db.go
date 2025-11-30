@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/Iusemywalk88/Weather/internal/config"
 	"github.com/Iusemywalk88/Weather/models"
@@ -45,7 +46,7 @@ func (db *DB) GetOrCreateCity(cityName string) (int, error) {
 	var city int
 	err := db.Get(&city, "SELECT id FROM cities WHERE name = $1", cityName)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			createErr := db.QueryRow("INSERT INTO cities (name) VALUES ($1) RETURNING id", cityName).Scan(&city)
 			if createErr != nil {
 				return 0, createErr
@@ -60,4 +61,13 @@ func (db *DB) GetOrCreateCity(cityName string) (int, error) {
 func (db *DB) AddFavourite(userID, cityID int) error {
 	_, err := db.Exec("INSERT INTO favorite_cities (user_id, city_id) VALUES ($1, $2)", userID, cityID)
 	return err
+}
+
+func (db *DB) CheckAlreadyFavorite(userID, cityID int) (bool, error) {
+	var exists bool
+	err := db.Get(&exists, "SELECT EXISTS(SELECT 1 FROM favorite_cities WHERE user_id = $1 AND city_id = $2)", userID, cityID)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
