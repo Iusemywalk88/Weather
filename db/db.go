@@ -15,6 +15,11 @@ type DB struct {
 	*sqlx.DB
 }
 
+type City struct {
+	ID   int    `db:"id"`
+	Name string `db:"name"`
+}
+
 func New(cfg config.Config) *DB {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName)
@@ -70,4 +75,21 @@ func (db *DB) CheckAlreadyFavorite(userID, cityID int) (bool, error) {
 		return false, err
 	}
 	return exists, nil
+}
+
+func (db *DB) GetAllCities(userID int) ([]City, error) {
+	var cityNames []City
+
+	query := `
+        SELECT c.name, c.id
+        FROM cities c
+		JOIN favorite_cities fc ON c.id = fc.city_id
+		WHERE fc.user_id = $1`
+
+	err := db.Select(&cityNames, query, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return cityNames, nil
 }

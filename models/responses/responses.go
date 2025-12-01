@@ -9,3 +9,8 @@ type BaseResponse struct {
 type LoginResponse struct {
 	Token string `json:"token"`
 }
+
+type FavouriteWeatherResponse struct {
+	City    string      `json:"city"`
+	Weather interface{} `json:"weather"`
+}

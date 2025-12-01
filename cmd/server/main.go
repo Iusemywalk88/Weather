@@ -30,13 +30,14 @@ func main() {
 	weatherHandler := handlers.NewWeatherHandler(weatherClient)
 	authService := services.NewAuthService(database, []byte(cfg.JWTKey))
 	authHandler := handlers.NewAuthHandler(authService, []byte(cfg.JWTKey))
-	favoriteHandler := handlers.NewFavouritesHandler(database)
+	favoriteHandler := handlers.NewFavouritesHandler(database, weatherClient)
 	authMiddleware := middleware.NewMiddleware([]byte(cfg.JWTKey))
 
 	authorized := r.Group("/")
 	authorized.Use(authMiddleware.AuthMiddleware())
 	{
 		authorized.POST("/favourites", favoriteHandler.AddFavourites)
+		authorized.GET("/favourites", favoriteHandler.GetFavourites)
 	}
 
 	r.GET("/weather/:city", weatherHandler.HandleWeather)
