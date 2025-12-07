@@ -93,3 +93,12 @@ func (db *DB) GetAllCities(userID int) ([]City, error) {
 
 	return cityNames, nil
 }
+
+func (db *DB) DeleteCity(userId int, cityId int) error {
+
+	_, err := db.Exec("DELETE FROM favorite_cities WHERE user_id = $1 AND city_id = $2", userId, cityId)
+	if err != nil {
+		return err
+	}
+	return nil
+}

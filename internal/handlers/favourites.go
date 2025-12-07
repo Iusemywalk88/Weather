@@ -78,3 +78,21 @@ func (f *FavouritesHandler) GetFavourites(c *gin.Context) {
 
 	c.JSON(http.StatusOK, responses.BaseResponse{Data: favouriteWeather})
 }
+
+func (f *FavouritesHandler) DeleteFavourites(c *gin.Context) {
+	var deleteReq requests.DeleteCityRequest
+
+	if err := c.ShouldBindJSON(&deleteReq); err != nil {
+		c.JSON(http.StatusBadRequest, responses.BaseResponse{Error: "Invalid request body: " + err.Error()})
+		return
+	}
+
+	userID := c.GetInt(constants.ContextKeyUserID)
+
+	if err := f.DB.DeleteCity(userID, deleteReq.CityId); err != nil {
+		c.JSON(http.StatusInternalServerError, responses.BaseResponse{Error: "Failed to delete city: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.BaseResponse{Message: "City deleted from favourites successfully"})
+}

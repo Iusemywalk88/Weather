@@ -38,6 +38,7 @@ func main() {
 	{
 		authorized.POST("/favourites", favoriteHandler.AddFavourites)
 		authorized.GET("/favourites", favoriteHandler.GetFavourites)
+		authorized.DELETE("/favourites", favoriteHandler.DeleteFavourites)
 	}
 
 	r.GET("/weather/:city", weatherHandler.HandleWeather)
