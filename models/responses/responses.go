@@ -1,5 +1,7 @@
 package responses
 
+import "github.com/Iusemywalk88/Weather/models"
+
 type BaseResponse struct {
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
@@ -11,6 +13,7 @@ type LoginResponse struct {
 }
 
 type FavouriteWeatherResponse struct {
-	City    string      `json:"city"`
-	Weather interface{} `json:"weather"`
+	City    string                  `json:"city"`
+	Weather interface{}             `json:"weather"`
+	History []models.WeatherHistory `json:"history,omitempty"`
 }

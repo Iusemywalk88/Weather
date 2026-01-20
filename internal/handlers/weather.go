@@ -21,7 +21,7 @@ func (w *weatherHandler) HandleWeather(c *gin.Context) {
 	city := c.Param("city")
 
 	if city == "" {
-		c.JSON(http.StatusBadRequest, responses.BaseResponse{Error: "город не указан"})
+		c.JSON(http.StatusBadRequest, responses.BaseResponse{Error: "Nothing was written"})
 		return
 	}
 

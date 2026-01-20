@@ -9,6 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
+	"time"
 )
 
 type DB struct {
@@ -101,4 +102,63 @@ func (db *DB) DeleteCity(userId int, cityId int) error {
 		return err
 	}
 	return nil
+}
+
+func (db *DB) HistoryExistsForToday(cityID int) (bool, error) {
+	var exists bool
+	err := db.Get(&exists, "SELECT EXISTS(SELECT 1 FROM weather_history WHERE city_id = $1 AND created_at::date = now()::date)", cityID)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
+func (db *DB) CreateHistory(
+	cityName string,
+	temperature float64,
+	description string,
+	createdAt time.Time) error {
+
+	cityID, err := db.GetOrCreateCity(cityName)
+	if err != nil {
+		return err
+	}
+
+	exists, err := db.HistoryExistsForToday(cityID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	_, err = db.Exec("INSERT INTO weather_history (city_id, temperature, description, created_at) VALUES ($1,$2,$3,$4)", cityID, temperature, description, createdAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *DB) GetHistory(cityName string) ([]models.WeatherHistory, error) {
+	var cityID int
+	err := db.Get(&cityID, "SELECT id FROM cities WHERE name = $1", cityName)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return []models.WeatherHistory{}, nil
+		}
+		return nil, err
+	}
+
+	var history []models.WeatherHistory
+	query := `
+		SELECT temperature, description, created_at
+		FROM weather_history
+		WHERE city_id = $1
+		ORDER BY created_at DESC`
+
+	err = db.Select(&history, query, cityID)
+	if err != nil {
+		return nil, err
+	}
+	return history, nil
 }

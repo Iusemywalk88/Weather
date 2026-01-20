@@ -70,10 +70,19 @@ func (f *FavouritesHandler) GetFavourites(c *gin.Context) {
 	for _, city := range cities {
 		weather, err := f.WeatherClient.GetWeather(city.Name)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, responses.BaseResponse{Error: "Failed to get weather: " + city.Name + err.Error()})
 			continue
 		}
-		favouriteWeather = append(favouriteWeather, responses.FavouriteWeatherResponse{City: city.Name, Weather: weather})
+
+		history, err := f.DB.GetHistory(city.Name)
+		if err != nil {
+			continue
+		}
+
+		favouriteWeather = append(favouriteWeather, responses.FavouriteWeatherResponse{
+			City:    city.Name,
+			Weather: weather,
+			History: history,
+		})
 	}
 
 	c.JSON(http.StatusOK, responses.BaseResponse{Data: favouriteWeather})

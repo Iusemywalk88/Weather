@@ -26,11 +26,12 @@ func main() {
 	database := db.New(*cfg)
 
 	r := gin.Default()
-	weatherClient := client.NewWeatherClient(cfg.WeatherAPIURL, cfg.WeatherAPIKey)
+	weatherClient := client.NewWeatherClient(database, cfg.WeatherAPIURL, cfg.WeatherAPIKey)
 	weatherHandler := handlers.NewWeatherHandler(weatherClient)
 	authService := services.NewAuthService(database, []byte(cfg.JWTKey))
 	authHandler := handlers.NewAuthHandler(authService, []byte(cfg.JWTKey))
 	favoriteHandler := handlers.NewFavouritesHandler(database, weatherClient)
+	historyHandler := handlers.NewHistoryHandler(database)
 	authMiddleware := middleware.NewMiddleware([]byte(cfg.JWTKey))
 
 	authorized := r.Group("/")
@@ -39,6 +40,7 @@ func main() {
 		authorized.POST("/favourites", favoriteHandler.AddFavourites)
 		authorized.GET("/favourites", favoriteHandler.GetFavourites)
 		authorized.DELETE("/favourites", favoriteHandler.DeleteFavourites)
+		authorized.GET("/history/:city", historyHandler.GetHistoryByCity)
 	}
 
 	r.GET("/weather/:city", weatherHandler.HandleWeather)
