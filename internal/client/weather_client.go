@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Iusemywalk88/Weather/db"
 	"github.com/Iusemywalk88/Weather/models"
 	"net/http"
 	"time"
@@ -14,17 +13,15 @@ type WeatherClient interface {
 }
 
 type weatherClient struct {
-	database   *db.DB
 	baseUrl    string
 	token      string
 	httpClient http.Client
 }
 
-func NewWeatherClient(db *db.DB, baseUrl, token string) WeatherClient {
+func NewWeatherClient(baseUrl, token string) WeatherClient {
 	return &weatherClient{
-		database: db,
-		baseUrl:  baseUrl,
-		token:    token,
+		baseUrl: baseUrl,
+		token:   token,
 		httpClient: http.Client{
 			Timeout: time.Second * 10,
 		},
@@ -64,8 +61,6 @@ func (w *weatherClient) GetWeather(city string) (models.WeatherResponse, error) 
 	if err := json.NewDecoder(resp.Body).Decode(&weatherResponse); err != nil {
 		return models.WeatherResponse{}, err
 	}
-
-	w.database.CreateHistory(city, weatherResponse.Main.Temperature, weatherResponse.Weather[0].Description, time.Now())
 
 	return weatherResponse, nil
 }

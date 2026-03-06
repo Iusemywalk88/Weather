@@ -32,7 +32,7 @@ func (f *FavouritesHandler) AddFavourites(c *gin.Context) {
 
 	userID := c.GetInt(constants.ContextKeyUserID)
 
-	cityID, err := f.DB.GetOrCreateCity(fav.City)
+	cityID, err := f.DB.GetCity(fav.City)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.BaseResponse{Error: "Problem creating city: " + err.Error()})
 		return

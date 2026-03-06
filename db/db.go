@@ -35,8 +35,12 @@ func New(cfg config.Config) *DB {
 }
 
 func (db *DB) CreateUser(user *models.User) error {
-	_, err := db.Exec("INSERT INTO public.users (email, password_hash) VALUES ($1, $2)", user.Email, user.PasswordHash)
-	return err
+	_, err := db.Exec("INSERT INTO public.users (email, password_hash) VALUES ($1, $2)",
+		user.Email, user.PasswordHash)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (db *DB) GetUserByEmail(email string) (*models.User, error) {
@@ -48,24 +52,29 @@ func (db *DB) GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (db *DB) GetOrCreateCity(cityName string) (int, error) {
-	var city int
-	err := db.Get(&city, "SELECT id FROM cities WHERE name = $1", cityName)
+func (db *DB) GetCity(cityName string) (int, error) {
+	var cityID int
+	err := db.Get(&cityID, "SELECT id FROM cities WHERE name = $1", cityName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			createErr := db.QueryRow("INSERT INTO cities (name) VALUES ($1) RETURNING id", cityName).Scan(&city)
-			if createErr != nil {
-				return 0, createErr
-			}
-			return city, nil
+			db.createCity(cityName)
 		}
 		return 0, err
 	}
-	return city, nil
+	return cityID, nil
+}
+
+func (db *DB) createCity(cityName string) (int, error) {
+	var cityID int
+	createErr := db.QueryRow("INSERT INTO cities (name) VALUES ($1) RETURNING id", cityName).Scan(&cityID)
+	if createErr != nil {
+		return 0, createErr
+	}
+	return cityID, nil
 }
 
 func (db *DB) AddFavourite(userID, cityID int) error {
-	_, err := db.Exec("INSERT INTO favorite_cities (user_id, city_id) VALUES ($1, $2)", userID, cityID)
+	_, err := db.Exec("INSERT INTO favorite_cities (user_, city_id) VALUES ($1, $2)", userID, cityID)
 	return err
 }
 
@@ -95,9 +104,9 @@ func (db *DB) GetAllCities(userID int) ([]City, error) {
 	return cityNames, nil
 }
 
-func (db *DB) DeleteCity(userId int, cityId int) error {
+func (db *DB) DeleteCity(userID int, cityID int) error {
 
-	_, err := db.Exec("DELETE FROM favorite_cities WHERE user_id = $1 AND city_id = $2", userId, cityId)
+	_, err := db.Exec("DELETE FROM favorite_cities WHERE user_id = $1 AND city_id = $2", userID, cityID)
 	if err != nil {
 		return err
 	}
@@ -119,7 +128,7 @@ func (db *DB) CreateHistory(
 	description string,
 	createdAt time.Time) error {
 
-	cityID, err := db.GetOrCreateCity(cityName)
+	cityID, err := db.GetCity(cityName)
 	if err != nil {
 		return err
 	}
@@ -144,7 +153,7 @@ func (db *DB) GetHistory(cityName string) ([]models.WeatherHistory, error) {
 	err := db.Get(&cityID, "SELECT id FROM cities WHERE name = $1", cityName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return []models.WeatherHistory{}, nil
+			return nil, nil
 		}
 		return nil, err
 	}
