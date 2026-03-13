@@ -59,7 +59,7 @@ func (f *FavouritesHandler) AddFavourites(c *gin.Context) {
 
 func (f *FavouritesHandler) GetFavourites(c *gin.Context) {
 	userID := c.GetInt(constants.ContextKeyUserID)
-	cities, err := f.DB.GetAllCities(userID)
+	cities, err := f.DB.GetUserFavoriteCities(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.BaseResponse{Error: "Failed to get favourites: " + err.Error()})
 		return
@@ -98,7 +98,7 @@ func (f *FavouritesHandler) DeleteFavourites(c *gin.Context) {
 
 	userID := c.GetInt(constants.ContextKeyUserID)
 
-	if err := f.DB.DeleteCity(userID, deleteReq.CityId); err != nil {
+	if err := f.DB.DeleteUserFavorite(userID, deleteReq.CityId); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.BaseResponse{Error: "Failed to delete city: " + err.Error()})
 		return
 	}

@@ -9,11 +9,11 @@ import (
 )
 
 type AuthHandler struct {
-	AuthService *services.AuthService
+	AuthService services.AuthServiceInterface
 	JWTKey      []byte
 }
 
-func NewAuthHandler(authService *services.AuthService, jwtKey []byte) *AuthHandler {
+func NewAuthHandler(authService services.AuthServiceInterface, jwtKey []byte) *AuthHandler {
 	return &AuthHandler{AuthService: authService, JWTKey: jwtKey}
 }
 

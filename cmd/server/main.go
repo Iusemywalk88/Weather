@@ -37,10 +37,14 @@ func main() {
 
 	authorized := r.Group("/")
 	authorized.Use(authMiddleware.AuthMiddleware())
-	authorized.POST("/favourites", favoriteHandler.AddFavourites)
-	authorized.GET("/favourites", favoriteHandler.GetFavourites)
-	authorized.DELETE("/favourites", favoriteHandler.DeleteFavourites)
-	authorized.GET("/history/:city", historyHandler.GetHistoryByCity)
+	favorites := authorized.Group("/favourites")
+
+	favorites.POST("/favourites", favoriteHandler.AddFavourites)
+	favorites.GET("/favourites", favoriteHandler.GetFavourites)
+	favorites.DELETE("/favourites", favoriteHandler.DeleteFavourites)
+
+	history := authorized.Group("/history")
+	history.GET("/:city", historyHandler.GetHistoryByCity)
 
 	r.GET("/weather/:city", weatherHandler.HandleWeather)
 	r.POST("/register", authHandler.RegisterUser)

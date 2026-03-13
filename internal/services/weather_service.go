@@ -1,21 +1,32 @@
 package services
 
 import (
-	"github.com/Iusemywalk88/Weather/db"
 	"github.com/Iusemywalk88/Weather/internal/client"
 	"github.com/Iusemywalk88/Weather/models"
 	"time"
 )
 
-type WeatherService struct {
-	weatherClient client.WeatherClient
-	DB            *db.DB
+//go:generate mockgen -destination=mocks/mock_weather_client.go -package=mocks github.com/Iusemywalk88/Weather/internal/client WeatherClient
+//go:generate mockgen -destination=mocks/mock_weather_repo.go -package=mocks github.com/Iusemywalk88/Weather/internal/services WeatherRepo
+//go:generate mockgen -destination=mocks/mock_weather_service.go -package=mocks github.com/Iusemywalk88/Weather/internal/services WeatherServiceInterface
+
+type WeatherServiceInterface interface {
+	GetWeatherAndSaveHistory(city string) (models.WeatherResponse, error)
 }
 
-func NewWeatherService(client client.WeatherClient, db *db.DB) WeatherService {
-	return WeatherService{
+type WeatherRepo interface {
+	CreateHistory(cityName string, temperature float64, description string, createdAt time.Time) error
+}
+
+type WeatherService struct {
+	weatherClient client.WeatherClient
+	repo          WeatherRepo
+}
+
+func NewWeatherService(client client.WeatherClient, repo WeatherRepo) *WeatherService {
+	return &WeatherService{
 		weatherClient: client,
-		DB:            db,
+		repo:          repo,
 	}
 }
 
@@ -25,7 +36,7 @@ func (s *WeatherService) GetWeatherAndSaveHistory(city string) (models.WeatherRe
 		return models.WeatherResponse{}, err
 	}
 
-	err = s.DB.CreateHistory(city, weather.Main.Temperature, weather.Weather[0].Description, time.Now())
+	err = s.repo.CreateHistory(city, weather.Main.Temperature, weather.Weather[0].Description, time.Now())
 	if err != nil {
 		return models.WeatherResponse{}, err
 	}

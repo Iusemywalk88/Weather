@@ -8,6 +8,13 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination=mocks/mock_auth_service.go -package=mocks github.com/Iusemywalk88/Weather/internal/services AuthServiceInterface
+
+type AuthServiceInterface interface {
+	Register(email, password string) (*models.User, error)
+	Login(email, password string) (string, error)
+}
+
 const TokenTTLInHours = 24
 
 type AuthService struct {

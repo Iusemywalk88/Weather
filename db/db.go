@@ -57,7 +57,11 @@ func (db *DB) GetCity(cityName string) (int, error) {
 	err := db.Get(&cityID, "SELECT id FROM cities WHERE name = $1", cityName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			db.createCity(cityName)
+			cityID, err = db.createCity(cityName)
+			if err != nil {
+				return 0, err
+			}
+			return cityID, nil
 		}
 		return 0, err
 	}
@@ -87,7 +91,7 @@ func (db *DB) CheckAlreadyFavorite(userID, cityID int) (bool, error) {
 	return exists, nil
 }
 
-func (db *DB) GetAllCities(userID int) ([]City, error) {
+func (db *DB) GetUserFavoriteCities(userID int) ([]City, error) {
 	var cityNames []City
 
 	query := `
@@ -104,7 +108,7 @@ func (db *DB) GetAllCities(userID int) ([]City, error) {
 	return cityNames, nil
 }
 
-func (db *DB) DeleteCity(userID int, cityID int) error {
+func (db *DB) DeleteUserFavorite(userID int, cityID int) error {
 
 	_, err := db.Exec("DELETE FROM favorite_cities WHERE user_id = $1 AND city_id = $2", userID, cityID)
 	if err != nil {
