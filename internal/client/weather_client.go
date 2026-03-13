@@ -45,7 +45,7 @@ func (w *weatherClient) GetWeather(city string) (models.WeatherResponse, error) 
 	resp, err := w.httpClient.Do(req)
 
 	if err != nil {
-		return models.WeatherResponse{}, fmt.Errorf("сервер погоды не отвежает, попробуйте позже")
+		return models.WeatherResponse{}, fmt.Errorf("Server doesn`t respond")
 	}
 
 	defer func() {
@@ -53,7 +53,7 @@ func (w *weatherClient) GetWeather(city string) (models.WeatherResponse, error) 
 	}()
 
 	if resp.StatusCode != 200 {
-		return models.WeatherResponse{}, fmt.Errorf("API вернуло ошибку: %s", resp.Status)
+		return models.WeatherResponse{}, fmt.Errorf("API returns error: %s", resp.Status)
 	}
 
 	var weatherResponse models.WeatherResponse

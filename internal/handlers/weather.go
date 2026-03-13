@@ -1,17 +1,19 @@
 package handlers
 
 import (
-	"github.com/Iusemywalk88/Weather/internal/client"
+	"github.com/Iusemywalk88/Weather/internal/services"
+	"github.com/Iusemywalk88/Weather/models/responses"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type weatherHandler struct {
-	weatherCLient client.WeatherClient
+	weatherService services.WeatherService
 }
 
-func NewWeatherHandler(client client.WeatherClient) *weatherHandler {
+func NewWeatherHandler(service services.WeatherService) *weatherHandler {
 	return &weatherHandler{
-		weatherCLient: client,
+		weatherService: service,
 	}
 }
 
@@ -19,15 +21,15 @@ func (w *weatherHandler) HandleWeather(c *gin.Context) {
 	city := c.Param("city")
 
 	if city == "" {
-		c.JSON(400, gin.H{"error": "город не указан"})
+		c.JSON(http.StatusBadRequest, responses.BaseResponse{Error: "Nothing was written"})
 		return
 	}
 
-	weather, err := w.weatherCLient.GetWeather(city)
+	weather, err := w.weatherService.GetWeatherAndSaveHistory(city)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, responses.BaseResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(200, weather)
+	c.JSON(http.StatusOK, responses.BaseResponse{Data: weather})
 }
